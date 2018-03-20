@@ -5,6 +5,6 @@ Re-implementation of group ICA method for mesh-based 2D time-series data, based 
 
   * https://www.ncbi.nlm.nih.gov/pubmed/20153834
   
-Includes class to perform perform dual regression to generate subject-specific independent components and 
+Includes class to perform perform dual regression to generate subject-specific independent components and component-specific time series.
 
 Currently, this implementation does not support spatial smoothing on the surface mesh.
