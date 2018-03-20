@@ -14,7 +14,7 @@ from sklearn.utils.extmath import randomized_svd
 class CanICA(object):
 
     def __init__(self,n_components=20,pca_filter=False,n_init=10,
-                 do_cca=True,standardize=True,low_pass=None,high_pass=None,tr=None,
+                 do_cca=False,standardize=True,low_pass=None,high_pass=None,tr=None,
                  threshold=None,random_state=None):
 
         """
