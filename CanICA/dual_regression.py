@@ -95,7 +95,7 @@ class DualRegression(object):
 
         :param signals: resting state time series
         :param time_components: subject-specific, component-specific time series
-        :return:
+        :return: Z-scores of spatial maps
         """
 
         print 'Spatial regression.'
@@ -116,9 +116,9 @@ class DualRegression(object):
             models[j].fit(transformed,signal.T)
 
             coefficients = models[j].coef_
+            coefficients = Z.fit_transform(coefficients)
 
             if self.z_threshold:
-                coefficints = Z.fit_transform(coefficients)
                 idx = np.abs(coefficients) < self.z_threshold
                 coefficients[idx] = 0
 
