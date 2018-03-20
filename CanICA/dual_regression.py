@@ -10,21 +10,15 @@ class DualRegression(object):
 
         """
 
-        :param temporal_standardize: boolean indicating whether to variance
+        :param temporal_standardize: boolean indicating whether to variance-
                                     noramalize design matrix for
                                     temporal regression
         :param z_threshold: value at which to high-pass threshold spatial components
-                            If None, returns raw components
+                            If None, returns raw components.
         :return:
         """
 
-        try:
-            assert z_threshold > 0
-        except:
-            raise ValueError('z_threshold must be greater than 0')
-        else:
-            self.z_threshold = z_threshold
-
+        self.z_threshold = z_threshold
         self.temporal_standardize = temporal_standardize
 
     def fit(self,input_files,group_components):
@@ -76,10 +70,10 @@ class DualRegression(object):
         :return:
         """
 
+        print 'Temporal regression.'
+
         models = {}.fromkeys(np.arange(len(signals)))
         time_series = []
-
-        print 'Regressing {:} signals.'.format(len(signals))
 
         for j,signal in enumerate(signals):
 
@@ -97,6 +91,8 @@ class DualRegression(object):
         :param time_components:
         :return:
         """
+
+        print 'Spatial regression.'
 
         models = {}.fromkeys(np.arange(len(signals)))
         S = StandardScaler(with_mean=False, with_std=True)
