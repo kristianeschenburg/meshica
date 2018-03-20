@@ -4,3 +4,5 @@ Re-implementation of group ICA method for mesh-based 2D time-series data, based 
 http://nilearn.github.io/modules/generated/nilearn.decomposition.CanICA.html
 
 https://www.ncbi.nlm.nih.gov/pubmed/20153834
+
+Currently, this implementation does not support spatial smoothing on the surface mesh.
