@@ -6,19 +6,26 @@ from sklearn.preprocessing import StandardScaler
 
 class DualRegression(object):
 
-    def __init(self,temporal_standardize=True,spatial_standardize=False):
+    def __init(self,temporal_standardize=True,z_threshold=2):
 
         """
 
         :param temporal_standardize: boolean indicating whether to variance
                                     noramalize design matrix for
                                     temporal regression
-
+        :param z_threshold: value at which to high-pass threshold spatial components
+                            If None, returns raw components
         :return:
         """
 
+        try:
+            assert z_threshold > 0
+        except:
+            raise ValueError('z_threshold must be greater than 0')
+        else:
+            self.z_threshold = z_threshold
+
         self.temporal_standardize = temporal_standardize
-        self.spatial_standardize = spatial_standardize
 
     def fit(self,input_files,group_components):
 
@@ -28,6 +35,11 @@ class DualRegression(object):
         :param group_components:
         :return:
         """
+
+        try:
+            assert len(group_components) > 0
+        except:
+            raise ValueError('Must fit group components first.')
 
         merged = self._merge_and_reduce(input_files)
 
@@ -86,6 +98,7 @@ class DualRegression(object):
 
         models = {}.fromkeys(np.arange(len(signals)))
         S = StandardScaler(with_mean=False, with_std=True)
+        Z = StandardScaler(with_mean=True,with_std=True)
         spatial = []
 
         for j,signal in signals:
@@ -98,6 +111,13 @@ class DualRegression(object):
             models[j] = LinearRegression()
             models[j].fit(transformed,signal.T)
 
-            spatial.append(models[j].coef_)
+            coefficients = models[j].coef_
+
+            if self.z_threshold:
+                coefficints = Z.fit_transform(coefficients)
+                idx = np.abs(coefficients) < self.z_threshold
+                coefficients[idx] = 0
+
+            spatial.append(coefficients)
 
         return spatial
