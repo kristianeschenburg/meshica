@@ -14,7 +14,7 @@ from sklearn.utils.extmath import randomized_svd
 class CanICA(object):
 
     def __init__(self,n_components=20,pca_filter=False,n_init=10,
-                 do_cca=False,standardize=True,low_pass=None,high_pass=None,tr=None,
+                 do_cca=False,standardize=True,low_pass=None,high_pass=None,t_r=None,
                  threshold=None,random_state=None):
 
         """
@@ -44,7 +44,7 @@ class CanICA(object):
         self.standardize = standardize
         self.low_pass = low_pass
         self.high_pass = high_pass
-        self.tr = tr
+        self.t_r = t_r
 
         self.threshold=threshold
         self.random_state=random_state
@@ -129,7 +129,7 @@ class CanICA(object):
             matrix = niio.load(inp)
             matrix = clean(matrix,standardize=self.standardize,
                            low_pass=self.low_pass,high_pass=self.high_pass,
-                           t_r=self.tr)
+                           t_r=self.t_r)
 
             if self.pca_filter:
                 matrix = self._reduce(matrix)
