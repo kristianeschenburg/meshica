@@ -101,6 +101,9 @@ class CanICA(object):
             if component.max() < -component.min():
                 component *= -1
 
+        self.components_ = self.components_.T
+
+
     def _merge_and_reduce(self,input_files):
 
         """
@@ -140,7 +143,7 @@ class CanICA(object):
         :param data: raw resting state signals
         """
 
-        print 'Fitting with CCA == {:}'.format(str(self.do_cca))
+        print 'Fitting with CCA = {:}'.format(str(self.do_cca))
 
         if self.do_cca:
             S = np.sqrt(np.sum(data ** 2, axis=1))

@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 class DualRegression(object):
 
-    def __init(self,temporal_standardize=True,z_threshold=2):
+    def __init__(self,temporal_standardize=True,z_threshold=2):
 
         """
 
@@ -37,7 +37,7 @@ class DualRegression(object):
         """
 
         try:
-            assert len(group_components) > 0
+            assert group_components.shape[1] > 0
         except:
             raise ValueError('Must fit group components first.')
 
@@ -79,6 +79,8 @@ class DualRegression(object):
         models = {}.fromkeys(np.arange(len(signals)))
         time_series = []
 
+        print 'Regressing {:} signals.'.format(len(signals))
+
         for j,signal in enumerate(signals):
 
             models[j] = LinearRegression()
@@ -101,7 +103,7 @@ class DualRegression(object):
         Z = StandardScaler(with_mean=True,with_std=True)
         spatial = []
 
-        for j,signal in signals:
+        for j,signal in enumerate(signals):
 
             if self.temporal_standardize:
                 transformed = S.fit_transform(time_components[j])
