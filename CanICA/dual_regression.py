@@ -6,9 +6,11 @@ from sklearn.preprocessing import StandardScaler
 
 class DualRegression(object):
 
-    def __init__(self,temporal_standardize=True,z_threshold=2):
+    def __init__(self,temporal_standardize=True,z_threshold=None):
 
         """
+
+        Class to perform dual regression of group-ICA components.
 
         :param temporal_standardize: boolean indicating whether to variance-
                                     noramalize design matrix for
@@ -24,6 +26,8 @@ class DualRegression(object):
     def fit(self,input_files,group_components):
 
         """
+
+        Wrapper method to run dual regression.
 
         :param input_files:
         :param group_components:
@@ -64,6 +68,7 @@ class DualRegression(object):
     def _temporal(self,signals,group_components):
 
         """
+        Perform temporal regression.
 
         :param signals:
         :param group_components:
@@ -86,9 +91,10 @@ class DualRegression(object):
     def _spatial(self,signals,time_components):
 
         """
+        Perform spatial regression.
 
-        :param signals:
-        :param time_components:
+        :param signals: resting state time series
+        :param time_components: subject-specific, component-specific time series
         :return:
         """
 

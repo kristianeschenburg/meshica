@@ -19,14 +19,20 @@ class CanICA(object):
 
         """
 
+        Class to run group ICA on 2D surface mesh data using Canonical ICA method
+        described in Varoquaux et al. 2010.  Based on original nilearn implementation
+        for 4D data.
+
+         * https://www.ncbi.nlm.nih.gov/pubmed/20153834
+
         :param n_components: number of ICA components to generate
         :param pca_filter: apply temporal dimensionality reduction
                             prior to group ICA
         :param n_init: number of times FastICA is restarted
-        :param do_cca: whether ors not to run Canonical Correlation Analysis after PCA
-        :param standardize: boolean, apply signal cleaning
-        :param low_pass: low pass filter
-        :param high_pass: high pass filter
+        :param do_cca: boolean to run Canonical Correlation Analysis after PCA
+        :param standardize: boolean to normalize data
+        :param low_pass: low-pass filter
+        :param high_pass: high-pass filter
         :param tr: repetitiion time
         """
 
@@ -161,7 +167,6 @@ class CanICA(object):
     def _reduce(self,signals):
 
         """
-
         Perform temporal dimensionality reduction.
 
         :param signals: single-subject resting state matrix.
