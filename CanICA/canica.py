@@ -15,7 +15,7 @@ class CanICA(object):
 
     def __init__(self,n_components=20,pca_filter=False,n_init=10,
                  do_cca=False,standardize=True,low_pass=None,high_pass=None,t_r=None,
-                 threshold=None,random_state=None):
+                 threshold='auto',random_state=None):
 
         """
 
