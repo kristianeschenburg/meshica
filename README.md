@@ -1,4 +1,4 @@
-# CanICA
+# meshICA
 New implementations and reformatted implementations of group ICA methods for 2D mesh-based resting state MRI data.
 
   * **canica**: re-implementation of Canonical group ICA algorithm based on the Varoquaux et al.'s 2010 *nilearn* CanICA original implementation for 4D data:
