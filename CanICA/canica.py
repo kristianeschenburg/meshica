@@ -19,7 +19,7 @@ class CanICA(object):
 
         """
 
-        Class to run group ICA on 2D surface mesh data using Canonical ICA method
+        Class to run group ICA on 2D surface mesh data using Canonical ICA algorithm
         described in Varoquaux et al. 2010.  Based on original nilearn implementation
         for 4D data.
 
