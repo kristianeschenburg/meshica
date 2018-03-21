@@ -7,7 +7,7 @@ New implementations and reformatted implementations of group ICA methods for 2D 
     * https://www.ncbi.nlm.nih.gov/pubmed/20153834
   
   
-  * **migp**: implementation of Smith et al.'s 2014 Melodic's Iterative Group PCA algorithm for group ICA of very large datasets
+  * **migp** (in-progress): implementation of Smith et al.'s 2014 Melodic's Iterative Group PCA algorithm for group ICA of very large datasets
   
     * https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4289914/pdf/main.pdf
   
