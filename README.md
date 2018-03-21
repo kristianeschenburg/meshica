@@ -1,13 +1,13 @@
 # meshICA
 New implementations and reformatted implementations of group ICA methods for 2D mesh-based resting state MRI data.
 
-  * **canica**: re-implementation of Canonical group ICA algorithm based on the Varoquaux et al.'s 2010 *nilearn* CanICA original implementation for 4D data:
+  * **canica**: re-implementation of group ICA for 2D data based on the Varoquaux et al.'s 2010 CanonicalICA algorithm implementation in the *nilearn* package for 4D volumetric data:
 
     * http://nilearn.github.io/modules/generated/nilearn.decomposition.CanICA.html
     * https://www.ncbi.nlm.nih.gov/pubmed/20153834
   
   
-  * **migp** (in-progress): implementation of Smith et al.'s 2014 Melodic's Iterative Group PCA algorithm for group ICA of very large datasets
+  * **migp** (in-progress): implementation of Smith et al.'s 2014 Melodic's Iterative Group PCA (MIGP) algorithm for group ICA of very large datasets
   
     * https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4289914/pdf/main.pdf
   
