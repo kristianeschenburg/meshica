@@ -16,7 +16,7 @@ import random
 
 class MIGP(object):
 
-    def __init__(self,n_components=20,m_eigen=5500,s_init=3,n_init=10,
+    def __init__(self,n_components=20,m_eigen=9600,s_init=3,n_init=10,
                  standardize=True,low_pass=None,high_pass=None,t_r=None,
                  threshold=None,random_state=None,):
 
@@ -52,7 +52,7 @@ class MIGP(object):
         self.threshold=threshold
         self.random_state=random_state
 
-    def _fit(self,input_files):
+    def fit(self,input_files):
 
         """
 
@@ -61,13 +61,108 @@ class MIGP(object):
         """
 
         random.shuffle(input_files)
+        self._raw_fit(input_files)
+        self._unmix_components()
+        return self
 
-    def _raw_fit(self):
+    def _unmix_components(self):
 
-        pass
+        """
+        Core function of CanICA to rotate components to maximize independance
+        """
 
-    def _merge_and_reduce(self,input_files):
+        print 'Unmixing components'
 
-        pass
+        random_state = check_random_state(self.random_state)
 
-    def _update(self):
+        seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
+        results = Parallel(n_jobs=4)(
+            delayed(fastica)(self.components_.T,whiten=True,
+                             fun='cube',random_state=seed) for seed in seeds)
+
+        ica_maps_gen_ = (result[2].T for result in results)
+        ica_maps_and_sparsities = ((ica_map,
+                                    np.sum(np.abs(ica_map), axis=1).max())
+                                   for ica_map in ica_maps_gen_)
+        ica_maps, _ = min(ica_maps_and_sparsities, key=itemgetter(-1))
+
+        # Thresholding
+        ratio = None
+        if isinstance(self.threshold, float):
+            ratio = self.threshold
+        elif self.threshold == 'auto':
+            ratio = 1.
+        elif self.threshold is not None:
+            raise ValueError("Threshold must be None, "
+                             "'auto' or float. You provided %s." %
+                             str(self.threshold))
+
+        if ratio is not None:
+            abs_ica_maps = abs(ica_maps)
+            threshold = scoreatpercentile(
+                abs_ica_maps,
+                100. - (100. / len(ica_maps)) * ratio)
+            ica_maps[abs_ica_maps < threshold] = 0.
+        self.components_ = ica_maps
+
+        # flip signs in each component so that peak is +ve
+        for component in self.components_:
+            if component.max() < -component.min():
+                component *= -1
+
+        self.components_ = self.components_.T
+
+    def _raw_fit(self,input_files):
+
+        """
+
+        :param input_files:
+        :return:
+        """
+
+        W = []
+        print 'Loading initial {:} subjects.'.format(self.s_init)
+        for s in np.arange(self.s_init):
+            W.append(self._merge_and_reduce(input_files[s]))
+
+        # Compute initial estimate of spatial eigenvectors
+        print 'Computing initial estimate for {:} subjects.'.format(self.s_init)
+        W = np.row_stack(W)
+        W = self._estimate(W)
+
+        print 'Updating estimates with remaining {:} subjects.'.format(len(files) - self.s_init)
+        for s in np.arange(self.s_init,len(input_files)):
+
+            update_data = self._merge_and_reduce(input_files[s])
+            W = np.row_stack([W,update_data])
+
+            temporal, variance, spatial = randomized_svd(W, self.m_eigen, n_iter=3)
+            W = np.dot(np.diag(variance),spatial)
+
+        self.components_ = W[0:self.n_components,:]
+
+    def _merge_and_reduce(self,input_file):
+
+
+        print 'Loading {:}'.format(input_file.split('/')[-1])
+
+        matrix = niio.load(input_file)
+        matrix = clean(matrix, standardize=self.standardize,
+                       low_pass=self.low_pass, high_pass=self.high_pass,
+                       t_r=self.t_r)
+
+        return matrix.T
+
+    def _estimate(self,signals):
+
+        """
+
+        Compute weighted spatial eigenvectors of signal.
+
+        :param signals:
+        :return:
+        """
+
+        _,variance,spatial = randomized_svd(signals, self.m_eigen, n_iter=3)
+
+        return np.dot(np.diag(variance),spatial)
