@@ -121,7 +121,6 @@ class MIGP(object):
         """
 
         W = []
-        print 'Loading initial {:} subjects.'.format(self.s_init)
         for s in np.arange(self.s_init):
             W.append(self._merge_and_reduce(input_files[s]))
 
@@ -130,7 +129,6 @@ class MIGP(object):
         W = np.row_stack(W)
         W = self._estimate(W)
 
-        print 'Updating estimates with remaining {:} subjects.'.format(len(files) - self.s_init)
         for s in np.arange(self.s_init,len(input_files)):
 
             update_data = self._merge_and_reduce(input_files[s])
