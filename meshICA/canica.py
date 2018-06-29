@@ -12,7 +12,7 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 
 class CanICA(object):
-
+    
     def __init__(self,n_components=20,pca_filter=False,n_init=10,
                  do_cca=False,standardize=True,low_pass=None,high_pass=None,t_r=None,
                  threshold='auto',random_state=None):
@@ -31,8 +31,8 @@ class CanICA(object):
         :param n_init: number of times FastICA is restarted
         :param do_cca: boolean to run Canonical Correlation Analysis after PCA
         :param standardize: boolean to normalize data
-        :param low_pass: low-pass filter
-        :param high_pass: high-pass filter
+        :param low_pass: low-pass filter limit
+        :param high_pass: high-pass filter limit
         :param tr: repetitiion time
         """
 
@@ -68,7 +68,7 @@ class CanICA(object):
         Core function of CanICA to rotate components to maximize independance
         """
 
-        print 'Unmixing components'
+        print('Unmixing components')
 
         random_state = check_random_state(self.random_state)
 
@@ -124,7 +124,7 @@ class CanICA(object):
 
         for inp in input_files:
 
-            print 'Loading {:}'.format(inp.split('/')[-1])
+            print('Loading {:}'.format(inp.split('/')[-1]))
 
             matrix = niio.load(inp)
             matrix = clean(matrix,standardize=self.standardize,
@@ -149,7 +149,7 @@ class CanICA(object):
         :param data: raw resting state signals
         """
 
-        print 'Fitting with CCA = {:}'.format(str(self.do_cca))
+        print('Fitting with CCA = {:}'.format(str(self.do_cca)))
 
         if self.do_cca:
             S = np.sqrt(np.sum(data ** 2, axis=1))
