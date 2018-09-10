@@ -11,8 +11,8 @@ A set of python scripts that implement group-ICA for graph-based data.  Also inc
 ## How to install and use:
 
 ```bash
-git clone https://github.com/kristianeschenburg/meshICA.git
-cd  ./meshICA
+git clone https://github.com/kristianeschenburg/meshica.git
+cd  ./meshica
 pip install .
 ```
 
