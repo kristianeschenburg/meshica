@@ -3,6 +3,7 @@ import nibabel as nb
 import scipy.io as sio
 
 import os
+import h5py
 
 
 def load(datafile, **kwargs):

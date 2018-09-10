@@ -1,4 +1,4 @@
-from meshica import load
+import niio
 import numpy as np
 
 from sklearn.linear_model import LinearRegression
@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 class DualRegression(object):
 
-    def __init__(self, temporal_standardize=True, z_threshold=None):
+    def __init__(self,temporal_standardize=True,z_threshold=None):
 
         """
 
@@ -23,7 +23,7 @@ class DualRegression(object):
         self.z_threshold = z_threshold
         self.temporal_standardize = temporal_standardize
 
-    def fit(self, input_files, group_components):
+    def fit(self,input_files,group_components):
 
         """
 
@@ -41,10 +41,10 @@ class DualRegression(object):
 
         merged = self._merge_and_reduce(input_files)
 
-        self.time_series = self._temporal(merged, group_components)
-        self.spatial_components = self._spatial(merged, self.time_series)
+        self.time_series = self._temporal(merged,group_components)
+        self.spatial_components = self._spatial(merged,self.time_series)
 
-    def _merge_and_reduce(self, input_files):
+    def _merge_and_reduce(self,input_files):
 
         """
 
@@ -58,14 +58,14 @@ class DualRegression(object):
 
         for inp in input_files:
 
-            print('Loading {:}'.format(inp.split('/')[-1]))
+            print 'Loading {:}'.format(inp.split('/')[-1])
 
-            matrix = load.load(inp)
+            matrix = niio.load(inp)
             signals.append(matrix)
 
         return signals
 
-    def _temporal(self, signals, group_components):
+    def _temporal(self,signals,group_components):
 
         """
         Perform temporal regression.
@@ -75,7 +75,7 @@ class DualRegression(object):
         :return:
         """
 
-        print('Temporal regression.')
+        print 'Temporal regression.'
 
         models = {}.fromkeys(np.arange(len(signals)))
         time_series = []
@@ -88,7 +88,7 @@ class DualRegression(object):
 
         return time_series
 
-    def _spatial(self,signals, time_components):
+    def _spatial(self,signals,time_components):
 
         """
         Perform spatial regression.
@@ -98,14 +98,14 @@ class DualRegression(object):
         :return: Z-scores of spatial maps
         """
 
-        print('Spatial regression.')
+        print 'Spatial regression.'
 
         models = {}.fromkeys(np.arange(len(signals)))
         S = StandardScaler(with_mean=False, with_std=True)
-        Z = StandardScaler(with_mean=True, with_std=True)
+        Z = StandardScaler(with_mean=True,with_std=True)
         spatial = []
 
-        for j, signal in enumerate(signals):
+        for j,signal in enumerate(signals):
 
             if self.temporal_standardize:
                 transformed = S.fit_transform(time_components[j])
@@ -113,7 +113,7 @@ class DualRegression(object):
                 transformed = time_components[j]
 
             models[j] = LinearRegression()
-            models[j].fit(transformed, signal.T)
+            models[j].fit(transformed,signal.T)
 
             coefficients = models[j].coef_
             coefficients = Z.fit_transform(coefficients)
