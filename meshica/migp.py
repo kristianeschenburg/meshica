@@ -1,4 +1,4 @@
-from loaded import loaded
+from meshica import load
 from operator import itemgetter
 
 import numpy as np
@@ -16,9 +16,9 @@ import random
 
 class MIGP(object):
 
-    def __init__(self,n_components=20,m_eigen=9600,s_init=3,n_init=10,
-                 standardize=True,low_pass=None,high_pass=None,t_r=None,
-                 threshold=None,random_state=None,):
+    def __init__(self, n_components=20, m_eigen=9600, s_init=3, n_init=10,
+                 standardize=True, low_pass=None, high_pass=None, t_r=None,
+                 threshold=None, random_state=None,):
 
         """
 
@@ -71,7 +71,7 @@ class MIGP(object):
         Core function of CanICA to rotate components to maximize independance
         """
 
-        print 'Unmixing components'
+        print('Unmixing components')
 
         random_state = check_random_state(self.random_state)
 
@@ -125,7 +125,7 @@ class MIGP(object):
             W.append(self._merge_and_reduce(input_files[s]))
 
         # Compute initial estimate of spatial eigenvectors
-        print 'Computing initial estimate for {:} subjects.'.format(self.s_init)
+        print('Computing initial estimate for {:} subjects.'.format(self.s_init))
         W = np.row_stack(W)
         W = self._estimate(W)
 
@@ -139,12 +139,12 @@ class MIGP(object):
 
         self.components_ = W[0:self.n_components,:]
 
-    def _merge_and_reduce(self,input_file):
+    def _merge_and_reduce(self, input_file):
 
 
-        print 'Loading {:}'.format(input_file.split('/')[-1])
+        print('Loading {:}'.format(input_file.split('/')[-1]))
 
-        matrix = loaded.load(input_file)
+        matrix = load.load(input_file)
         matrix = clean(matrix, standardize=self.standardize,
                        low_pass=self.low_pass, high_pass=self.high_pass,
                        t_r=self.t_r)

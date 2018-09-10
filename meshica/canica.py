@@ -1,5 +1,4 @@
-from niio import loaded
-
+from meshica import load
 from operator import itemgetter
 
 import numpy as np
@@ -14,9 +13,9 @@ from sklearn.utils.extmath import randomized_svd
 
 class CanICA(object):
     
-    def __init__(self,n_components=20,pca_filter=False,n_init=10,
-                 do_cca=False,standardize=True,low_pass=None,high_pass=None,t_r=None,
-                 threshold='auto',random_state=None):
+    def __init__(self, n_components=20, pca_filter=False, n_init=10,
+                 do_cca=False, standardize=True, low_pass=None, high_pass=None, t_r=None,
+                 threshold='auto', random_state=None):
 
         """
 
@@ -75,8 +74,8 @@ class CanICA(object):
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
         results = Parallel(n_jobs=4)(
-            delayed(fastica)(self.components_.T,whiten=True,
-                             fun='cube',random_state=seed) for seed in seeds)
+            delayed(fastica)(self.components_.T, whiten=True,
+                             fun='cube', random_state=seed) for seed in seeds)
 
         ica_maps_gen_ = (result[2].T for result in results)
         ica_maps_and_sparsities = ((ica_map,
@@ -111,7 +110,7 @@ class CanICA(object):
         self.components_ = self.components_.T
 
 
-    def _merge_and_reduce(self,input_files):
+    def _merge_and_reduce(self, input_files):
 
         """
 
@@ -127,9 +126,9 @@ class CanICA(object):
 
             print('Loading {:}'.format(inp.split('/')[-1]))
 
-            matrix = loaded.load(inp)
-            matrix = clean(matrix,standardize=self.standardize,
-                           low_pass=self.low_pass,high_pass=self.high_pass,
+            matrix = load.load(inp)
+            matrix = clean(matrix, standardize=self.standardize,
+                           low_pass=self.low_pass, high_pass=self.high_pass,
                            t_r=self.t_r)
 
             if self.pca_filter:

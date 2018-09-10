@@ -1,20 +1,17 @@
-===============================
-MeshICA
-===============================
+## What is meshICA?
 
-.. image:: https://img.shields.io/travis/kristianeschenburg/meshica.svg
-        :target: https://travis-ci.org/kristianeschenburg/meshica
+A set of python scripts that implement group-ICA for graph-based data, along with dual-regression to map the group-ICA components back onto single-subject time-series.
 
-.. image:: https://img.shields.io/pypi/v/meshica.svg
-        :target: https://pypi.python.org/pypi/meshica
+(Free software: 3-clause BSD license)
 
+## Included Algorithms:
+* [CanonicalICA](https://www.ncbi.nlm.nih.gov/pubmed/20153834) (as implemented in Scikit-Learn)
+* [MELODIC'S Incremental Group-PCA](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4289914/) (MIGP)
 
-Python package for running various ICA algorithms on mesh-based data.
+## How to install and use:
 
-* Free software: 3-clause BSD license
-* Documentation: (COMING SOON!) https://kristianeschenburg.github.io/meshica.
-
-Features
---------
-
-* TODO
+```bash
+git clone https://github.com/kristianeschenburg/meshICA.git
+cd  ./meshICA
+pip install .
+```
