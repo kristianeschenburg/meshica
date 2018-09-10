@@ -58,7 +58,7 @@ class DualRegression(object):
 
         for inp in input_files:
 
-            print 'Loading {:}'.format(inp.split('/')[-1])
+            print('Loading {:}'.format(inp.split('/')[-1]))
 
             matrix = load.load(inp)
             signals.append(matrix)
@@ -75,7 +75,7 @@ class DualRegression(object):
         :return:
         """
 
-        print 'Temporal regression.'
+        print('Temporal regression.')
 
         models = {}.fromkeys(np.arange(len(signals)))
         time_series = []
@@ -98,7 +98,7 @@ class DualRegression(object):
         :return: Z-scores of spatial maps
         """
 
-        print 'Spatial regression.'
+        print('Spatial regression.')
 
         models = {}.fromkeys(np.arange(len(signals)))
         S = StandardScaler(with_mean=False, with_std=True)
