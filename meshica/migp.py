@@ -1,4 +1,4 @@
-from meshica import load
+import niio
 from operator import itemgetter
 
 import numpy as np
@@ -144,7 +144,7 @@ class MIGP(object):
 
         print 'Loading {:}'.format(input_file.split('/')[-1])
 
-        matrix = load.load(input_file)
+        matrix = niio.load(input_file)
         matrix = clean(matrix, standardize=self.standardize,
                        low_pass=self.low_pass, high_pass=self.high_pass,
                        t_r=self.t_r)

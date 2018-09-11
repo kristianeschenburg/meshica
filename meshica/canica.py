@@ -1,4 +1,4 @@
-from meshica import load
+import niio
 from operator import itemgetter
 
 import numpy as np
@@ -126,7 +126,7 @@ class CanICA(object):
 
             print('Loading {:}'.format(inp.split('/')[-1]))
 
-            matrix = load.load(inp)
+            matrix = niio.load(inp)
             matrix = clean(matrix,standardize=self.standardize,
                            low_pass=self.low_pass,high_pass=self.high_pass,
                            t_r=self.t_r)
