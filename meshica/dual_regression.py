@@ -1,4 +1,4 @@
-import niio
+from niio import loaded, write
 import numpy as np
 
 from sklearn.linear_model import LinearRegression
@@ -60,7 +60,7 @@ class DualRegression(object):
 
             print 'Loading {:}'.format(inp.split('/')[-1])
 
-            matrix = niio.load(inp)
+            matrix = loaded.load(inp)
             signals.append(matrix)
 
         return signals
