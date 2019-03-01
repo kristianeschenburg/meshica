@@ -4,9 +4,11 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 
+from statsni.confidence import hpd_grid as hpd
+
 class DualRegression(object):
 
-    def __init__(self,temporal_standardize=True,z_threshold=None):
+    def __init__(self, temporal_standardize=True, hdr_alpha=0.05):
 
         """
 
@@ -20,10 +22,10 @@ class DualRegression(object):
         :return:
         """
 
-        self.z_threshold = z_threshold
+        self.hdr_alpha = hdr_alpha
         self.temporal_standardize = temporal_standardize
 
-    def fit(self,input_files,group_components):
+    def fit(self, input_files, group_components):
 
         """
 
@@ -41,10 +43,10 @@ class DualRegression(object):
 
         merged = self._merge_and_reduce(input_files)
 
-        self.time_series = self._temporal(merged,group_components)
-        self.spatial_components = self._spatial(merged,self.time_series)
+        self.time_series = self._temporal(merged, group_components)
+        self.spatial_components = self._spatial(merged, self.time_series)
 
-    def _merge_and_reduce(self,input_files):
+    def _merge_and_reduce(self, input_files):
 
         """
 
@@ -58,14 +60,14 @@ class DualRegression(object):
 
         for inp in input_files:
 
-            print 'Loading {:}'.format(inp.split('/')[-1])
+            print('Loading {:}'.format(inp.split('/')[-1]))
 
             matrix = loaded.load(inp)
             signals.append(matrix)
 
         return signals
 
-    def _temporal(self,signals,group_components):
+    def _temporal(self,signals, group_components):
 
         """
         Perform temporal regression.
@@ -75,20 +77,20 @@ class DualRegression(object):
         :return:
         """
 
-        print 'Temporal regression.'
+        print('Temporal regression.')
 
         models = {}.fromkeys(np.arange(len(signals)))
         time_series = []
 
-        for j,signal in enumerate(signals):
+        for j, signal in enumerate(signals):
 
             models[j] = LinearRegression()
-            models[j].fit(group_components,signal)
+            models[j].fit(group_components, signal)
             time_series.append(models[j].coef_)
 
         return time_series
 
-    def _spatial(self,signals,time_components):
+    def _spatial(self, signals, time_components):
 
         """
         Perform spatial regression.
@@ -98,11 +100,11 @@ class DualRegression(object):
         :return: Z-scores of spatial maps
         """
 
-        print 'Spatial regression.'
+        print('Spatial regression.')
 
         models = {}.fromkeys(np.arange(len(signals)))
         S = StandardScaler(with_mean=False, with_std=True)
-        Z = StandardScaler(with_mean=True,with_std=True)
+        Z = StandardScaler(with_mean=True, with_std=True)
         spatial = []
 
         for j,signal in enumerate(signals):
@@ -118,9 +120,12 @@ class DualRegression(object):
             coefficients = models[j].coef_
             coefficients = Z.fit_transform(coefficients)
 
-            if self.z_threshold:
-                idx = np.abs(coefficients) < self.z_threshold
-                coefficients[idx] = 0
+            if self.hdr_alpha:
+                [bounds, _, _, _] = hpd(coefficients, alpha=self.hdr_alpha)
+                lower = bounds[0][0]
+                upper = bounds[0][1]
+                idx = np.asarray(np.logical_or(coefficients <= lower, coefficients >= upper))
+                coefficients = (idx*coefficients)
 
             spatial.append(coefficients)
 
