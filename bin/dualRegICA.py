@@ -20,6 +20,8 @@ parser.add_argument('-o', '--out_base', help='Output file name for group ICA com
     required=True, type=str)
 parser.add_argument('-hemi', '--hemisphere', help='Hemisphere to process.',
     required=False, type=str, choices=['L','R'], default='L')
+parser.add_argument('-a', '--alpha', help='Bayesian CI alpha value.', 
+    required=False, type=float, default=0.05)
 
 args = parser.parse_args()
 
@@ -38,7 +40,7 @@ hemimap = {'L': 'CortexLeft',
 if not os.path.isdir(args.out_dir):
     os.mkdir(args.out_dir)
 
-dual = drg.DualRegression()
+dual = drg.DualRegression(hdr_alpha=args.alpha)
 
 for s in subjects:
 
