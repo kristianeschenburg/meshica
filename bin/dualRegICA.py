@@ -49,7 +49,7 @@ for s in subjects:
 
     if os.path.isfile(temp_file):
 
-        out_extension = '{:].{:}.{:}'.format(s, args.hemisphere, args.out_base)
+        out_extension = '{:}.{:}.{:}'.format(s, args.hemisphere, args.out_base)
         temp_file = [temp_file]
 
         dual.fit(temp_file, groupICA)
