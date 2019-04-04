@@ -28,7 +28,6 @@ class DualRegression(object):
     def fit(self, input_files, group_components):
 
         """
-
         Wrapper method to run dual regression.
 
         :param input_files:

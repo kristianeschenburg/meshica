@@ -8,6 +8,12 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('-subjects', '--subject_list', help='List of subjects to process.',
     required=True, type=str)
+parser.add_argument('-nc', '--n_components', help='Number of ICA components to compute.',
+    required=False, type=int, default=20)
+parser.add_argument('-lp', '--low_pass', help='Low pass filter frequency.',
+    required=False, type=float, default=0.1)
+parser.add_argument('-tr', '--rep_time', help='Repetition time.',
+    required=False, type=float, default=0.720)
 parser.add_argument('-dir', '--data_dir', help='Directory where resting state data exists.',
     required=True, type=str)
 parser.add_argument('-e', '--extension', help='Resting state file extension.',
@@ -36,7 +42,7 @@ for s in subjects:
         resting.append(temp_file)
 
 print('Fitting gICA components...')
-ica = cICA.CanICA(low_pass=0.1, t_r=0.720)
+ica = cICA.CanICA(n_components=args.n_components, low_pass=args.low_pass, t_r=args.rep_time)
 ica.fit(resting)
 
 hemimap = {'L': 'CortexLeft',

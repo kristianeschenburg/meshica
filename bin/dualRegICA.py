@@ -3,6 +3,7 @@ import os
 
 from meshica import dual_regression as drg
 from niio import loaded, write
+import scipy.io as sio
 
 parser = argparse.ArgumentParser()
 
@@ -50,7 +51,13 @@ for s in subjects:
         temp_file = [temp_file]
 
         dual.fit(temp_file, groupICA)
+
+        times = dual.time_series[0]
         spatial = dual.spatial_components[0]
 
-        out_components = ''.join([args.out_dir, s, args.out_base])
+        out_components = ''.join([args.out_dir, s, args.out_base, 'Spatial.func.gii'])
+        out_time = ''.join([args.out_dir, s, args.out_base, 'Time'])
+        times = {'time_series': times}
+
         write.save(spatial, out_components, hemimap[args.hemisphere])
+        sio.savemat(file_name=out_time, mdict=times)
