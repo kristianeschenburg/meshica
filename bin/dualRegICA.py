@@ -48,6 +48,8 @@ for s in subjects:
     temp_file = ''.join([args.data_dir, s, args.extension])
 
     if os.path.isfile(temp_file):
+
+        out_extension = '{:].{:}.{:}'.format(s, args.hemisphere, args.out_base)
         temp_file = [temp_file]
 
         dual.fit(temp_file, groupICA)
@@ -55,8 +57,8 @@ for s in subjects:
         times = dual.time_series[0]
         spatial = dual.spatial_components[0]
 
-        out_components = ''.join([args.out_dir, s, args.out_base, 'Spatial.func.gii'])
-        out_time = ''.join([args.out_dir, s, args.out_base, 'Time'])
+        out_components = ''.join([args.out_dir, out_extension, '.Spatial.func.gii'])
+        out_time = ''.join([args.out_dir, out_extension, '.Time'])
         times = {'time_series': times}
 
         write.save(spatial, out_components, hemimap[args.hemisphere])
