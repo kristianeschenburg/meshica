@@ -110,7 +110,7 @@ class CanICA(object):
         self.components_ = self.components_.T
 
 
-    def _merge_and_reduce(self,input_files):
+    def _merge_and_reduce(self, input_files):
 
         """
 
@@ -127,6 +127,17 @@ class CanICA(object):
             print('Loading {:}'.format(inp.split('/')[-1]))
 
             matrix = loaded.load(inp)
+
+            try:
+                z
+            except NameError:
+                z = np.zeros((matrix.shape[0],))
+            else:
+                pass
+            finally:
+                zinds = np.where(np.abs(matrix).sum(1) == 0)[0]
+                z[zinds] += 1
+            
             print(matrix.shape)
             matrix = clean(matrix,standardize=self.standardize,
                            low_pass=self.low_pass,high_pass=self.high_pass,
@@ -137,7 +148,11 @@ class CanICA(object):
 
             signals.append(matrix)
 
+        self.mask = z.astype(np.bool)
+
         signals = np.column_stack(signals)
+        signals = signals[self.mask, :]
+        
         print(signals.shape)
 
         return signals.T
@@ -164,7 +179,9 @@ class CanICA(object):
         if self.do_cca:
             data *= S[:, np.newaxis]
 
-        self.components_ = self.components_.T
+        components = np.zeros((self.mask.shape[0], self.n_components))
+        components[self.mask, :] = self.components_.T
+        self.components_ = components
 
     def _reduce(self,signals):
 
@@ -175,7 +192,7 @@ class CanICA(object):
         :return U: reduced resting state matrix
         """
 
-        U, S, V = fast_svd(signals.T,self.n_components)
+        U, S, V = fast_svd(signals.T, self.n_components)
         U = U.T.copy()
         U = U * S[:, np.newaxis]
         return U
