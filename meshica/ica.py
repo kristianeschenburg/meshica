@@ -124,6 +124,8 @@ class ICA(object):
         print('Loading {:}'.format(input_file.split('/')[-1]))
 
         matrix = loaded.load(input_file)
+        if matrix.shape[0] < matrix.shape[1]:
+            matrix = matrix.T
         matrix = clean(matrix,standardize=self.standardize,
                         low_pass=self.low_pass, high_pass=self.high_pass,
                         t_r=self.t_r)

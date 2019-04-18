@@ -13,9 +13,9 @@ from sklearn.utils.extmath import randomized_svd
 
 class CanICA(object):
     
-    def __init__(self,n_components=20,pca_filter=False,n_init=10,
-                 do_cca=False,standardize=True,low_pass=None,high_pass=None,t_r=None,
-                 threshold='auto',random_state=None):
+    def __init__(self, n_components=20, pca_filter=False, n_init=10,
+                 do_cca=False, standardize=True, low_pass=None, high_pass=None, t_r=None,
+                 threshold='auto', random_state=None):
 
         """
 
@@ -127,6 +127,7 @@ class CanICA(object):
             print('Loading {:}'.format(inp.split('/')[-1]))
 
             matrix = loaded.load(inp)
+            print(matrix.shape)
             matrix = clean(matrix,standardize=self.standardize,
                            low_pass=self.low_pass,high_pass=self.high_pass,
                            t_r=self.t_r)
@@ -137,6 +138,7 @@ class CanICA(object):
             signals.append(matrix)
 
         signals = np.column_stack(signals)
+        print(signals.shape)
 
         return signals.T
 
