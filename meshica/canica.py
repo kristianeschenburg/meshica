@@ -136,6 +136,7 @@ class CanICA(object):
                 pass
             finally:
                 zinds = np.where(np.abs(matrix).sum(1) == 0)[0]
+                print(len(zinds))
                 z[zinds] += 1
             
             print(matrix.shape)
@@ -179,7 +180,7 @@ class CanICA(object):
         if self.do_cca:
             data *= S[:, np.newaxis]
 
-        components = np.zeros((self.mask.shape[0], self.n_components))
+        components = np.zeros((self.n_components, self.mask.shape[0]))
         components[self.mask, :] = self.components_.T
         self.components_ = components
 
