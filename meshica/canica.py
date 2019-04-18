@@ -140,7 +140,7 @@ class CanICA(object):
                     pass
                 else:
                     z[zinds] += 1
-                    
+
                     matrix = clean(matrix,standardize=self.standardize,
                                 low_pass=self.low_pass,high_pass=self.high_pass,
                                 t_r=self.t_r)
@@ -151,6 +151,7 @@ class CanICA(object):
                     signals.append(matrix)
 
         self.mask = z.astype(np.bool)
+        print(self.mask.sum())
         print(len(signals))
         signals = np.column_stack(signals)
         signals = signals[self.mask, :]
