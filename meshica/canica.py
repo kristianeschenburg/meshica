@@ -137,20 +137,18 @@ class CanICA(object):
             finally:
                 zinds = np.where(np.abs(matrix).sum(1) == 0)[0]
                 if len(zinds) > 3000:
-                    print('Skipping')
                     pass
                 else:
                     z[zinds] += 1
-            
-            print(matrix.shape)
-            matrix = clean(matrix,standardize=self.standardize,
-                           low_pass=self.low_pass,high_pass=self.high_pass,
-                           t_r=self.t_r)
+                    
+                    matrix = clean(matrix,standardize=self.standardize,
+                                low_pass=self.low_pass,high_pass=self.high_pass,
+                                t_r=self.t_r)
 
-            if self.pca_filter:
-                matrix = self._reduce(matrix)
+                    if self.pca_filter:
+                        matrix = self._reduce(matrix)
 
-            signals.append(matrix)
+                    signals.append(matrix)
 
         self.mask = z.astype(np.bool)
         print(len(signals))
