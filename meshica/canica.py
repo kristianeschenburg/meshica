@@ -184,7 +184,7 @@ class CanICA(object):
             data *= S[:, np.newaxis]
 
         components = np.zeros((self.n_components, self.mask.shape[0]))
-        components[self.mask, :] = self.components_.T
+        components[:, self.mask] = self.components_.T
         self.components_ = components
 
     def _reduce(self,signals):
