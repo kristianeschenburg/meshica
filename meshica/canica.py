@@ -136,8 +136,11 @@ class CanICA(object):
                 pass
             finally:
                 zinds = np.where(np.abs(matrix).sum(1) == 0)[0]
-                print(len(zinds))
-                z[zinds] += 1
+                if len(zinds) > 3000:
+                    print('Skipping')
+                    pass
+                else:
+                    z[zinds] += 1
             
             print(matrix.shape)
             matrix = clean(matrix,standardize=self.standardize,
@@ -150,7 +153,7 @@ class CanICA(object):
             signals.append(matrix)
 
         self.mask = z.astype(np.bool)
-
+        print(len(signals))
         signals = np.column_stack(signals)
         signals = signals[self.mask, :]
         
