@@ -154,7 +154,7 @@ class CanICA(object):
         print(self.mask.sum())
         print(len(signals))
         signals = np.column_stack(signals)
-        signals = signals[self.mask, :]
+        signals = signals[~self.mask, :]
         
         print(signals.shape)
 
@@ -183,7 +183,7 @@ class CanICA(object):
             data *= S[:, np.newaxis]
 
         components = np.zeros((self.n_components, self.mask.shape[0]))
-        components[:, self.mask] = self.components_.T
+        components[:, ~self.mask] = self.components_.T
         self.components_ = components
 
     def _reduce(self,signals):
