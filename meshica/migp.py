@@ -16,7 +16,7 @@ import random
 
 class MIGP(object):
 
-    def __init__(self,n_components=20,m_eigen=9600,s_init=3,n_init=10,
+    def __init__(self, n_components=10, m_eigen=9600, s_init=3, n_init=10,
                  standardize=True,low_pass=None,high_pass=None,t_r=None,
                  threshold=None,random_state=None,):
 
@@ -52,7 +52,7 @@ class MIGP(object):
         self.threshold=threshold
         self.random_state=random_state
 
-    def fit(self,input_files):
+    def fit(self, input_files):
 
         """
 
@@ -71,7 +71,7 @@ class MIGP(object):
         Core function of CanICA to rotate components to maximize independance
         """
 
-        print 'Unmixing components'
+        print('Unmixing components')
 
         random_state = check_random_state(self.random_state)
 
@@ -125,24 +125,28 @@ class MIGP(object):
             W.append(self._merge_and_reduce(input_files[s]))
 
         # Compute initial estimate of spatial eigenvectors
-        print 'Computing initial estimate for {:} subjects.'.format(self.s_init)
+        print('Computing initial estimate for {:} subjects.'.format(self.s_init))
         W = np.row_stack(W)
         W = self._estimate(W)
 
-        for s in np.arange(self.s_init,len(input_files)):
+        print('Initial estimate shape: {:}'.format(W.shape))
 
-            update_data = self._merge_and_reduce(input_files[s])
-            W = np.row_stack([W,update_data])
+        for temp_file in input_files[self.s_init:]:
+
+            update_data = self._merge_and_reduce(temp_file)
+            W = np.row_stack([W, update_data])
+            print('Concatenated estimate shape: {:}'.format(W.shape))
 
             temporal, variance, spatial = randomized_svd(W, self.m_eigen, n_iter=3)
-            W = np.dot(np.diag(variance),spatial)
+            W = np.dot(np.diag(variance), spatial)
+            print('Updated estimate shape: {:}'.format(W.shape))
 
-        self.components_ = W[0:self.n_components,:]
+        self.components_ = W[0:self.n_components, :]
 
-    def _merge_and_reduce(self,input_file):
+    def _merge_and_reduce(self, input_file):
 
 
-        print 'Loading {:}'.format(input_file.split('/')[-1])
+        print('Loading {:}'.format(input_file.split('/')[-1]))
 
         matrix = loaded.load(input_file)
         matrix = clean(matrix, standardize=self.standardize,
@@ -151,7 +155,7 @@ class MIGP(object):
 
         return matrix.T
 
-    def _estimate(self,signals):
+    def _estimate(self, signals):
 
         """
 
@@ -163,4 +167,4 @@ class MIGP(object):
 
         _,variance,spatial = randomized_svd(signals, self.m_eigen, n_iter=3)
 
-        return np.dot(np.diag(variance),spatial)
+        return variance[:, None]*spatial
