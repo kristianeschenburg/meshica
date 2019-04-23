@@ -45,7 +45,7 @@ for s in subjects:
     if os.path.isfile(temp_file):
         resting.append(temp_file)
 
-print('Fitting gICA components...')
+print('Fitting MIGP with {:} components...'.format(args.n_components))
 M = migp.MIGP(n_components=args.n_components, s_init=args.nisubjects, 
                 low_pass=args.low_pass, t_r=args.rep_time, 
                 m_eigen=args.neigens)
