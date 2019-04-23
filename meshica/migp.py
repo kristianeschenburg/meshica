@@ -39,9 +39,7 @@ class MIGP(object):
         :param random_state: random number generator
         """
 
-        self.n_components = n_components
-        print('# Components: {:}'.format(self.n_components))
-        
+        self.n_components = n_components        
         self.m_eigen = m_eigen
         self.s_init = s_init
         self.n_init = n_init
