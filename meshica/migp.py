@@ -58,6 +58,7 @@ class MIGP(object):
 
         :param input_files:
         :return:
+        
         """
 
         random.shuffle(input_files)

@@ -21,10 +21,19 @@ parser.add_argument('-o', '--out_base', help='Output file name for group ICA com
     required=True, type=str)
 parser.add_argument('-hemi', '--hemisphere', help='Hemisphere to process.',
     required=False, type=str, choices=['L','R'], default='L')
+parser.add_argument('-ci', '--confidence', help='Threshold beta coefficients by ' \
+    'p-value.', required=True, default=False, type=bool)
 parser.add_argument('-a', '--alpha', help='Bayesian CI alpha value.', 
     required=False, type=float, default=0.05)
 
 args = parser.parse_args()
+
+if args.confidence:
+    alpha = args.alpha
+    print('Applying confidence threshold of {:}.'.format(alpha))
+else:
+    alpha=None
+    print('Computing raw betas without confidence tresholding.')
 
 if not os.path.isfile(args.group_components):
     raise('Group ICA file does not exist.')
@@ -41,7 +50,7 @@ hemimap = {'L': 'CortexLeft',
 if not os.path.isdir(args.out_dir):
     os.mkdir(args.out_dir)
 
-dual = drg.DualRegression(hdr_alpha=args.alpha)
+dual = drg.DualRegression(hdr_alpha=alpha)
 
 for s in subjects:
 
