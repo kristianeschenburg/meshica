@@ -3,70 +3,86 @@ import numpy as np
 
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
+from nilearn.signal import clean
 
 from statsni.confidence import hpd_grid as hpd
 
-class DualRegression(object):
+class Regressor(object):
 
-    def __init__(self, temporal_standardize=True, hdr_alpha=0.05):
+    def __init__(self, standardize=True, hdr_alpha=0.05, tr=0.720, low_pass=None, high_pass=None, s_filter=False):
 
         """
-
         Class to perform dual regression of group-ICA components.
 
-        :param temporal_standardize: boolean indicating whether to variance-
-                                    noramalize design matrix for
-                                    temporal regression
-        :param z_threshold: value at which to high-pass threshold spatial components
-                            If None, returns raw components.
-        :return:
+        Parameters:
+        - - - - -
+        standardize: bool
+            apply temporal normalization
+        hdr_alpha: float
+            Bayesian confidence interval alpha value
+            default: 0.05
+        tr: float
+            repetition time
+        low / high pass: float
+            low and high frequency thresholds for spectral filtering
         """
 
+        self.standardize = standardize
+        self.s_filter = s_filter
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.tr = tr
         self.hdr_alpha = hdr_alpha
-        self.temporal_standardize = temporal_standardize
 
-    def fit(self, input_files, group_components):
+    def fit(self, input_rest, gica_components):
 
         """
         Wrapper method to run dual regression.
 
-        :param input_files:
-        :param group_components:
-        :return:
+        Parameters:
+        - - - - -
+        input_rest: float, array
+            numpy array of resting-state time-series for single subject
+        gica_components: float, array
+            numpy array of group-ICA components
         """
 
         try:
-            assert group_components.shape[1] > 0
+            assert gica_components.shape[1] > 0
         except:
             raise ValueError('Must fit group components first.')
 
-        merged = self._merge_and_reduce(input_files)
+        input_rest = self._merge_and_reduce(input_rest)
 
-        self.time_series = self._temporal(merged, group_components)
-        self.spatial_components = self._spatial(merged, self.time_series)
+        temporal_components = self.temporal_regression(input_rest, gica_components)
+        spatial_components = self.spatial_regression(input_rest, temporal_components)
 
-    def _merge_and_reduce(self, input_files):
+        self.temporal_ = temporal_components
+        self.spatial_ = spatial_components
+
+    def _merge_and_reduce(self, signals):
 
         """
 
-        Load resting state matrix files.
+        Apply filtering (optional) to resting state signal.
 
-        :param input_files: list of input resting state matrix files
-        :return signals: concatenated resting state arrays
+        Parameters:
+        - - - - -
+        time_series: float, array
+            raw resting-state matrix
         """
 
-        signals = []
+        if self.s_filter:
 
-        for inp in input_files:
-
-            print('Loading {:}'.format(inp.split('/')[-1]))
-
-            matrix = loaded.load(inp)
-            signals.append(matrix)
-
+            signals = clean(signals,
+                            standardize=self.standardize,
+                            low_pass=self.low_pass,
+                            high_pass=self.high_pass,
+                            t_r=self.tr)
+        
         return signals
 
-    def _temporal(self,signals, group_components):
+    def temporal_regression(self, signal, group_components):
 
         """
         Perform temporal regression.
@@ -76,56 +92,43 @@ class DualRegression(object):
         :return:
         """
 
-        print('Temporal regression.')
+        model = LinearRegression()
+        model.fit(group_components, signal)
+        
+        temporal_coefficients = model.coef_
 
-        models = {}.fromkeys(np.arange(len(signals)))
-        time_series = []
+        return temporal_coefficients
 
-        for j, signal in enumerate(signals):
-
-            models[j] = LinearRegression()
-            models[j].fit(group_components, signal)
-            time_series.append(models[j].coef_)
-
-        return time_series
-
-    def _spatial(self, signals, time_components):
+    def spatial_regression(self, signals, temporal_coefficients):
 
         """
         Perform spatial regression.
 
-        :param signals: resting state time series
-        :param time_components: subject-specific, component-specific time series
-        :return: Z-scores of spatial maps
+        Parameters:
+        - - - - -
+        signals: float, array
+            numpy array of resting-state signals
+        temporal_coefficients: float, array
+            estimated temporal coefficients of each components
         """
 
-        print('Spatial regression.')
-
-        models = {}.fromkeys(np.arange(len(signals)))
         S = StandardScaler(with_mean=False, with_std=True)
         Z = StandardScaler(with_mean=True, with_std=True)
-        spatial = []
 
-        for j,signal in enumerate(signals):
+        if self.standardize:
+            temporal_coefficients = S.fit_transform(temporal_coefficients)
 
-            if self.temporal_standardize:
-                transformed = S.fit_transform(time_components[j])
-            else:
-                transformed = time_components[j]
+        model = LinearRegression()
+        model.fit(temporal_coefficients, signals.T)
 
-            models[j] = LinearRegression()
-            models[j].fit(transformed,signal.T)
+        spatial_coefficients = model.coef_
+        spatial_coefficients = Z.fit_transform(spatial_coefficients)
 
-            coefficients = models[j].coef_
-            coefficients = Z.fit_transform(coefficients)
+        if self.hdr_alpha:
+            [bounds, _, _, _] = hpd(spatial_coefficients, alpha=self.hdr_alpha)
+            lower = bounds[0][0]
+            upper = bounds[0][1]
+            idx = np.asarray(np.logical_or(spatial_coefficients <= lower, spatial_coefficients >= upper))
+            spatial_coefficients = (idx*spatial_coefficients)
 
-            if self.hdr_alpha:
-                [bounds, _, _, _] = hpd(coefficients, alpha=self.hdr_alpha)
-                lower = bounds[0][0]
-                upper = bounds[0][1]
-                idx = np.asarray(np.logical_or(coefficients <= lower, coefficients >= upper))
-                coefficients = (idx*coefficients)
-
-            spatial.append(coefficients)
-
-        return spatial
+        return spatial_coefficients

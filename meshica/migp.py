@@ -8,7 +8,8 @@ from nilearn.decomposition.base import fast_svd
 from scipy.stats import scoreatpercentile
 from scipy.linalg import eigh
 from sklearn.decomposition import fastica
-from sklearn.externals.joblib import Memory, delayed, Parallel
+
+from joblib import Parallel, delayed
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 
@@ -17,8 +18,8 @@ import random
 class MIGP(object):
 
     def __init__(self, n_components=10, m_eigen=9600, s_init=3, n_init=10,
-                 standardize=True,low_pass=None,high_pass=None,t_r=None,
-                 threshold=None,random_state=None,):
+                 standardize=True, low_pass=None, high_pass=None, t_r=None,
+                 threshold=None, random_state=None, mask=None):
 
         """
 
@@ -27,16 +28,28 @@ class MIGP(object):
 
          * https://www.ncbi.nlm.nih.gov/pubmed/25094018
 
-        :param n_components: number of ICA components to generate
-        :param m_eigen: number of spatial PCA eigenvectors to update
-        :param s_init: number of datasets to initialize MIGP with
-        :param n_init: number of times FastICA is restarted
-        :param standardize: boolean to normalize data
-        :param low_pass: low-pass filter
-        :param high_pass: high-pass filter
-        :param t_r: repetitiion time
-        :param threshold:
-        :param random_state: random number generator
+         Parameters:
+         - - - - - -
+        n_components: int
+            number of ICA components to generate
+        m_eigen: int
+            number of spatial PCA eigenvectors to update
+        s_init: int
+            number of datasets to initialize MIGP with
+        n_init: int
+            number of times FastICA is restarted
+        standardize: bool
+            boolean to normalize data
+        low_pass: low-pass filter
+        high_pass: high-pass filter
+        t_r: float
+            repetitiion time (TR)
+        threshold: float, >=0, <=1
+            threshold value of coefficient maps
+        random_state: int
+            random number generator
+        mask: int array
+            boolean mask, indicating which voxel to keep
         """
 
         self.n_components = n_components        
@@ -52,6 +65,8 @@ class MIGP(object):
         self.threshold=threshold
         self.random_state=random_state
 
+        self.mask = mask
+
     def fit(self, input_files):
 
         """
@@ -64,7 +79,6 @@ class MIGP(object):
         random.shuffle(input_files)
         self._raw_fit(input_files)
         self._unmix_components()
-        return self
 
     def _unmix_components(self):
 
@@ -106,7 +120,7 @@ class MIGP(object):
             ica_maps[abs_ica_maps < threshold] = 0.
         self.components_ = ica_maps
 
-        # flip signs in each component so that peak is +ve
+        # flip signs in each component so that peak is (+)
         for component in self.components_:
             if component.max() < -component.min():
                 component *= -1
@@ -122,39 +136,62 @@ class MIGP(object):
         """
 
         W = []
-        for s in np.arange(self.s_init):
-            W.append(self._merge_and_reduce(input_files[s]))
+        for temp_file in input_files[:self.s_init]:
+
+            temp_matrix = loaded.load(temp_file)
+            nans = np.isnan(temp_matrix).sum()
+            infs = np.isinf(temp_matrix).sum()
+
+            if nans > 0 or infs > 0:
+                print('%s has %i NANs and %i INFs' % (temp_file, nans, infs))
+                continue
+            else:
+                W.append(self._merge_and_reduce(temp_matrix))
 
         # Compute initial estimate of spatial eigenvectors
         print('Computing initial estimate for {:} subjects.'.format(self.s_init))
-        W = np.row_stack(W)
+        W = np.row_stack(W).squeeze()
+        print('Initialization matrix: {:}'.format(W.shape))
         W = self._estimate(W)
 
         print('Initial estimate shape: {:}'.format(W.shape))
 
-        for temp_file in input_files[self.s_init:]:
+        for k, temp_file in enumerate(input_files[self.s_init:]):
 
-            update_data = self._merge_and_reduce(temp_file)
-            W = np.row_stack([W, update_data])
-            print('Concatenated estimate shape: {:}'.format(W.shape))
+            print('Adding file # %i' % (k+1+self.s_init))
 
-            temporal, variance, spatial = randomized_svd(W, self.m_eigen, n_iter=3)
-            W = np.dot(np.diag(variance), spatial)
-            print('Updated estimate shape: {:}'.format(W.shape))
+            temp_matrix = loaded.load(temp_file)
+            nans = np.isnan(temp_matrix).sum()
+            infs = np.isinf(temp_matrix).sum()
+
+            if nans > 0 or infs > 0:
+                print('%s has %i NANs and %i INFs' % (temp_file, nans, infs))
+                continue
+            else:
+                print('Adding file: %s' % (temp_file))
+                update_data = self._merge_and_reduce(temp_matrix)
+                W = np.row_stack([W, update_data])
+
+                temporal, variance, spatial = randomized_svd(W, self.m_eigen, n_iter=3)
+                W = np.dot(np.diag(variance), spatial)
 
         self.components_ = W[0:self.n_components, :]
 
-    def _merge_and_reduce(self, input_file):
+    def _merge_and_reduce(self, matrix):
 
+        if self.mask is not None:
+            if self.mask.shape[0] != matrix.shape[0]:
+                raise('Mask must have the same number of samples as the matrix.')
+            else:
+                matrix = matrix[np.where(self.mask),:]
 
-        print('Loading {:}'.format(input_file.split('/')[-1]))
+        print(matrix.shape)
 
-        matrix = loaded.load(input_file)
         matrix = clean(matrix, standardize=self.standardize,
                        low_pass=self.low_pass, high_pass=self.high_pass,
                        t_r=self.t_r)
 
-        return matrix.T
+        return matrix.T.squeeze()
 
     def _estimate(self, signals):
 

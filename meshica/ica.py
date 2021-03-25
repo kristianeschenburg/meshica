@@ -7,11 +7,13 @@ from nilearn.decomposition.base import fast_svd
 
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
-from sklearn.externals.joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 
 from statsni.confidence import hpd_grid as hpd
+
+import joblib
+from joblib import Memory, delayed, Parallel
 
 class ICA(object):
     
